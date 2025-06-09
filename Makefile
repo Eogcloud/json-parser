@@ -48,6 +48,16 @@ test-objects: debug
 		-L$(BUILD_DIR) -ljson
 	./$(BUILD_DIR)/test_objects
 
+# Test arrays specifically
+test-arrays: debug
+	$(CC) $(CFLAGS) $(DEBUG_FLAGS) -DUNITY_INCLUDE_DOUBLE -o $(BUILD_DIR)/test_arrays \
+		$(TEST_DIR)/test_arrays.c $(TEST_DIR)/unity/unity.c \
+		-L$(BUILD_DIR) -ljson
+	./$(BUILD_DIR)/test_arrays
+
+# Test everything
+test-all: test test-objects test-arrays
+
 # Clean
 clean:
 	rm -rf $(BUILD_DIR)

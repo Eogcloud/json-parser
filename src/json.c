@@ -253,10 +253,58 @@ static json_t* parse_object(parse_context_t *ctx) {
     return object;
 }
 
+// Parse a JSON array
 static json_t* parse_array(parse_context_t *ctx) {
-    // TODO: Implement array parsing  
-    (void)ctx;  // Suppress unused parameter warning
-    return NULL;
+    if (next_char(ctx) != '[') return NULL;  // Must start with '['
+    
+    json_t *array = json_new();
+    if (!array) return NULL;
+    array->type = JSON_ARRAY;
+    
+    // Handle empty array
+    if (peek_char(ctx) == ']') {
+        next_char(ctx);  // Consume ']'
+        return array;
+    }
+    
+    json_t *current_child = NULL;
+    
+    while (1) {
+        // Parse value
+        json_t *value_item = parse_value(ctx);
+        if (!value_item) {
+            json_delete(array);
+            return NULL;
+        }
+        
+        // Add to array's child list
+        if (!array->child) {
+            // First child
+            array->child = value_item;
+            current_child = value_item;
+        } else {
+            // Add to end of list
+            current_child->next = value_item;
+            value_item->prev = current_child;
+            current_child = value_item;
+        }
+        
+        // Check for continuation
+        char next = peek_char(ctx);
+        if (next == ']') {
+            next_char(ctx);  // Consume ']'
+            break;
+        } else if (next == ',') {
+            next_char(ctx);  // Consume ','
+            continue;
+        } else {
+            // Invalid character
+            json_delete(array);
+            return NULL;
+        }
+    }
+    
+    return array;
 }
 
 // Main parsing function
